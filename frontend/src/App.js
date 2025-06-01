@@ -1925,7 +1925,7 @@ const ExtensionCard = ({ extension }) => {
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
             <img
-              src={extension.icon_url || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=64&h=64&fit=crop"}
+              src={extension.icon_url || "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?w=64&h=64&fit=crop"}
               alt={extension.name}
               className="w-12 h-12 rounded-lg"
             />
