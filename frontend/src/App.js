@@ -1562,7 +1562,7 @@ const UKPropertySearch = () => {
 const UKPropertyCard = ({ property, onSave }) => (
   <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-xl shadow-lg overflow-hidden border border-slate-600/50 hover:border-amber-500/50 transition-all">
     <img
-      src={property.images?.[0] || "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=250&fit=crop"}
+      src={property.images?.[0] || "https://images.pexels.com/photos/1661566/pexels-photo-1661566.jpeg?w=400&h=250&fit=crop"}
       alt={property.title}
       className="w-full h-48 object-cover"
     />
