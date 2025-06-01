@@ -589,17 +589,26 @@ async def get_market_analysis(property_id: str):
 # UK Visa Endpoints
 @api_router.post("/visa-application", response_model=UKVisaApplication)
 async def create_visa_application(visa_data: VisaApplicationCreate):
-    visa_dict = visa_data.dict()
-    
-    timeline = get_default_visa_timeline(visa_data.visa_type)
-    visa_dict["timeline_milestones"] = timeline
-    
-    checklist = get_default_document_checklist(visa_data.visa_type)
-    visa_dict["documents_checklist"] = checklist
-    
-    visa_obj = UKVisaApplication(**visa_dict)
-    await db.visa_applications.insert_one(visa_obj.dict())
-    return visa_obj
+    try:
+        logger.info(f"Creating visa application with data: {visa_data}")
+        visa_dict = visa_data.dict()
+        
+        timeline = get_default_visa_timeline(visa_data.visa_type)
+        visa_dict["timeline_milestones"] = timeline
+        
+        checklist = get_default_document_checklist(visa_data.visa_type)
+        visa_dict["documents_checklist"] = checklist
+        
+        visa_obj = UKVisaApplication(**visa_dict)
+        logger.info(f"Visa object created: {visa_obj}")
+        
+        result = await db.visa_applications.insert_one(visa_obj.dict())
+        logger.info(f"Database insert result: {result.inserted_id}")
+        
+        return visa_obj
+    except Exception as e:
+        logger.error(f"Error creating visa application: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating visa application: {str(e)}")
 
 @api_router.get("/visa-application", response_model=List[UKVisaApplication])
 async def get_visa_applications():
