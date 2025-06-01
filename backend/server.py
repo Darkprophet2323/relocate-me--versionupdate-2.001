@@ -398,56 +398,6 @@ async def root():
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.utcnow()}
 
-@api_router.post("/debug-property", response_model=ArizonaProperty)
-async def debug_create_arizona_property(property_data: PropertyCreate):
-    """Debug version of property creation with extensive logging"""
-    try:
-        print("🔧 DEBUG: Starting property creation...")
-        logger.info("🔧 DEBUG: Starting property creation...")
-        
-        property_dict = property_data.dict()
-        print(f"🔧 DEBUG: Property dict created: {property_dict}")
-        logger.info(f"🔧 DEBUG: Property dict created: {property_dict}")
-        
-        property_obj = ArizonaProperty(**property_dict)
-        print(f"🔧 DEBUG: Property object created: {property_obj.id}")
-        logger.info(f"🔧 DEBUG: Property object created: {property_obj.id}")
-        
-        # Add market valuation
-        estimated_value = simulate_property_valuation(property_obj)
-        property_obj.estimated_value = estimated_value
-        print(f"🔧 DEBUG: Estimated value added: {estimated_value}")
-        logger.info(f"🔧 DEBUG: Estimated value added: {estimated_value}")
-        
-        # Insert into database
-        insert_dict = property_obj.dict()
-        print(f"🔧 DEBUG: About to insert: {insert_dict}")
-        logger.info(f"🔧 DEBUG: About to insert: {insert_dict}")
-        
-        result = await db.arizona_properties.insert_one(insert_dict)
-        print(f"🔧 DEBUG: Insert result: {result.inserted_id}")
-        logger.info(f"🔧 DEBUG: Insert result: {result.inserted_id}")
-        
-        # Verify insertion
-        found = await db.arizona_properties.find_one({"id": property_obj.id})
-        if found:
-            print(f"🔧 DEBUG: ✅ Property verified in database: {found['id']}")
-            logger.info(f"🔧 DEBUG: ✅ Property verified in database: {found['id']}")
-        else:
-            print(f"🔧 DEBUG: ❌ Property NOT found in database!")
-            logger.error(f"🔧 DEBUG: ❌ Property NOT found in database!")
-        
-        print("🔧 DEBUG: Returning property object")
-        logger.info("🔧 DEBUG: Returning property object")
-        return property_obj
-        
-    except Exception as e:
-        print(f"🔧 DEBUG: ❌ Exception occurred: {e}")
-        logger.error(f"🔧 DEBUG: ❌ Exception occurred: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Debug error: {str(e)}")
-
 # Authentication Endpoints
 @api_router.post("/login", response_model=Token)
 async def login(login_request: LoginRequest):
