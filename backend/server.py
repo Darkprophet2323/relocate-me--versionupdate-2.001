@@ -997,7 +997,7 @@ def get_curated_extensions() -> List[ChromeExtension]:
             rating=4.2,
             user_count="8,000+",
             features=["Area insights", "Transport data", "School ratings"],
-            icon_url="https://images.unsplash.com/photo-1560472354-b33ff0c44a43"
+            icon_url="https://images.unsplash.com/photo-1513530534585-c7b1394c6d51"
         ),
         ChromeExtension(
             name="Relocation Checklist Manager",
