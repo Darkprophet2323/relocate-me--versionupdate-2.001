@@ -571,10 +571,10 @@ async def create_visa_application(visa_data: VisaApplicationCreate):
     await db.visa_applications.insert_one(visa_obj.dict())
     return visa_obj
 
-@api_router.get("/visa-application")
+@api_router.get("/visa-application", response_model=List[UKVisaApplication])
 async def get_visa_applications():
     applications = await db.visa_applications.find({}, {"_id": 0}).to_list(1000)
-    return applications
+    return [UKVisaApplication(**app) for app in applications]
 
 @api_router.post("/visa-eligibility-check")
 async def check_visa_eligibility(visa_type: VisaType, user_responses: Dict[str, Any]):
