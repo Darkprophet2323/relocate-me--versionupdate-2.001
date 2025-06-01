@@ -1007,7 +1007,7 @@ def get_curated_extensions() -> List[ChromeExtension]:
             rating=4.6,
             user_count="15,000+",
             features=["Customizable checklists", "Progress tracking", "Deadline management"],
-            icon_url="https://images.unsplash.com/photo-1586953208448-b95a79798f07"
+            icon_url="https://images.unsplash.com/photo-1444653614773-995cb1ef9efa"
         )
     ]
 
