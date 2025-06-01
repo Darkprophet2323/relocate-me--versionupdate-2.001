@@ -449,7 +449,7 @@ async def create_user_profile(profile: UserProfileCreate, current_user: str = De
 
 @api_router.get("/profile/{user_id}", response_model=UserProfile)
 async def get_user_profile(user_id: str, current_user: str = Depends(get_current_user)):
-    profile = await db.user_profiles.find_one({"id": user_id})
+    profile = await db.user_profiles.find_one({"id": user_id}, {"_id": 0})
     if not profile:
         raise HTTPException(status_code=404, detail="User profile not found")
     return UserProfile(**profile)
