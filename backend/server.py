@@ -530,10 +530,10 @@ async def create_arizona_property(property_data: PropertyCreate):
     await db.arizona_properties.insert_one(property_obj.dict())
     return property_obj
 
-@api_router.get("/arizona-property", response_model=List[ArizonaProperty])
+@api_router.get("/arizona-property")
 async def get_arizona_properties():
     properties = await db.arizona_properties.find({}, {"_id": 0}).to_list(1000)
-    return [ArizonaProperty(**prop) for prop in properties]
+    return properties
 
 @api_router.get("/arizona-property/{property_id}", response_model=ArizonaProperty)
 async def get_arizona_property(property_id: str):
