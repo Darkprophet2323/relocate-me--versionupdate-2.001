@@ -573,7 +573,7 @@ async def create_visa_application(visa_data: VisaApplicationCreate):
 
 @api_router.get("/visa-application", response_model=List[UKVisaApplication])
 async def get_visa_applications():
-    applications = await db.visa_applications.find().to_list(1000)
+    applications = await db.visa_applications.find({}, {"_id": 0}).to_list(1000)
     return [UKVisaApplication(**app) for app in applications]
 
 @api_router.post("/visa-eligibility-check")
