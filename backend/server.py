@@ -532,12 +532,12 @@ async def create_arizona_property(property_data: PropertyCreate):
 
 @api_router.get("/arizona-property", response_model=List[ArizonaProperty])
 async def get_arizona_properties():
-    properties = await db.arizona_properties.find().to_list(1000)
+    properties = await db.arizona_properties.find({}, {"_id": 0}).to_list(1000)
     return [ArizonaProperty(**prop) for prop in properties]
 
 @api_router.get("/arizona-property/{property_id}", response_model=ArizonaProperty)
 async def get_arizona_property(property_id: str):
-    property_doc = await db.arizona_properties.find_one({"id": property_id})
+    property_doc = await db.arizona_properties.find_one({"id": property_id}, {"_id": 0})
     if not property_doc:
         raise HTTPException(status_code=404, detail="Property not found")
     return ArizonaProperty(**property_doc)
