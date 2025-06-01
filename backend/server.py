@@ -957,7 +957,7 @@ def get_curated_extensions() -> List[ChromeExtension]:
             rating=4.5,
             user_count="10,000+",
             features=["Advanced filters", "Price alerts", "Map integration"],
-            icon_url="https://images.unsplash.com/photo-1560518883-ce09059eeffa"
+            icon_url="https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg"
         ),
         ChromeExtension(
             name="LinkedIn Job Search Pro",
