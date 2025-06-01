@@ -906,7 +906,7 @@ def generate_sample_uk_properties(search_params: PropertySearchRequest) -> List[
             "bedrooms": 3,
             "bathrooms": 2,
             "property_type": "terraced",
-            "images": ["https://images.unsplash.com/photo-1568605114967-8130f3a36994"]
+            "images": ["https://images.pexels.com/photos/1661566/pexels-photo-1661566.jpeg"]
         },
         {
             "id": str(uuid.uuid4()),
