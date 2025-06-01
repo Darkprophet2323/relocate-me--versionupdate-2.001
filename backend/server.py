@@ -918,7 +918,7 @@ def generate_sample_uk_properties(search_params: PropertySearchRequest) -> List[
             "bedrooms": 2,
             "bathrooms": 1,
             "property_type": "detached",
-            "images": ["https://images.unsplash.com/photo-1570129477492-45c003edd2be"]
+            "images": ["https://images.pexels.com/photos/242246/pexels-photo-242246.jpeg"]
         }
     ]
     return sample_properties
