@@ -977,7 +977,7 @@ def get_curated_extensions() -> List[ChromeExtension]:
             rating=4.3,
             user_count="5,000+",
             features=["Application tracking", "Deadline reminders", "Document checklist"],
-            icon_url="https://images.unsplash.com/photo-1521791136064-7986c2920216"
+            icon_url="https://images.pexels.com/photos/3639542/pexels-photo-3639542.jpeg"
         ),
         ChromeExtension(
             name="Indeed UK Job Alerts",
