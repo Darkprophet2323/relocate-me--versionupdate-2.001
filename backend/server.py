@@ -771,7 +771,7 @@ async def update_milestone_completion(milestone_id: str, completed: bool, curren
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Milestone not found")
     
-    milestone = await db.timeline_milestones.find_one({"id": milestone_id})
+    milestone = await db.timeline_milestones.find_one({"id": milestone_id}, {"_id": 0})
     return TimelineMilestone(**milestone)
 
 @api_router.post("/initialize-timeline/{user_id}")
