@@ -967,7 +967,7 @@ def get_curated_extensions() -> List[ChromeExtension]:
             rating=4.7,
             user_count="50,000+",
             features=["Visa sponsorship filter", "Salary insights", "Application tracking"],
-            icon_url="https://images.unsplash.com/photo-1586281380349-632531db7ed4"
+            icon_url="https://images.pexels.com/photos/1571459/pexels-photo-1571459.jpeg"
         ),
         ChromeExtension(
             name="UK Visa Tracker",
