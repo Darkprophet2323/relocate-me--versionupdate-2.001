@@ -523,14 +523,25 @@ async def get_financial_summary(user_id: str, current_user: str = Depends(get_cu
 # Arizona Property Endpoints
 @api_router.post("/arizona-property", response_model=ArizonaProperty)
 async def create_arizona_property(property_data: PropertyCreate):
-    property_dict = property_data.dict()
-    property_obj = ArizonaProperty(**property_dict)
-    
-    estimated_value = simulate_property_valuation(property_obj)
-    property_obj.estimated_value = estimated_value
-    
-    await db.arizona_properties.insert_one(property_obj.dict())
-    return property_obj
+    try:
+        logger.info(f"Creating arizona property with data: {property_data}")
+        property_dict = property_data.dict()
+        property_obj = ArizonaProperty(**property_dict)
+        
+        # Add market valuation
+        estimated_value = simulate_property_valuation(property_obj)
+        property_obj.estimated_value = estimated_value
+        
+        logger.info(f"Property object created: {property_obj}")
+        
+        # Insert into database
+        result = await db.arizona_properties.insert_one(property_obj.dict())
+        logger.info(f"Database insert result: {result.inserted_id}")
+        
+        return property_obj
+    except Exception as e:
+        logger.error(f"Error creating arizona property: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating property: {str(e)}")
 
 @api_router.get("/arizona-property", response_model=List[ArizonaProperty])
 async def get_arizona_properties():
