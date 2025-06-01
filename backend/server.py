@@ -987,7 +987,7 @@ def get_curated_extensions() -> List[ChromeExtension]:
             rating=4.4,
             user_count="25,000+",
             features=["Real-time alerts", "Remote work filter", "Salary comparison"],
-            icon_url="https://images.unsplash.com/photo-1611224923853-80b023f02d71"
+            icon_url="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40"
         ),
         ChromeExtension(
             name="Zoopla Property Tools",
