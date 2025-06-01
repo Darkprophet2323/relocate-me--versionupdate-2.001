@@ -592,8 +592,25 @@ async def create_visa_application(visa_data: VisaApplicationCreate):
 
 @api_router.get("/visa-application", response_model=List[UKVisaApplication])
 async def get_visa_applications():
-    applications = await db.visa_applications.find({}, {"_id": 0}).to_list(1000)
-    return [UKVisaApplication(**app) for app in applications]
+    try:
+        applications = await db.visa_applications.find({}, {"_id": 0}).to_list(1000)
+        logger.info(f"Retrieved {len(applications)} visa applications from database")
+        
+        # Convert and validate each application
+        result = []
+        for i, app in enumerate(applications):
+            try:
+                visa_obj = UKVisaApplication(**app)
+                result.append(visa_obj)
+            except Exception as e:
+                logger.error(f"Error converting visa application {i}: {e}")
+                logger.error(f"Application data: {app}")
+                continue
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error retrieving visa applications: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @api_router.post("/visa-eligibility-check")
 async def check_visa_eligibility(visa_type: VisaType, user_responses: Dict[str, Any]):
