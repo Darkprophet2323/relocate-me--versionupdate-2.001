@@ -465,7 +465,7 @@ async def create_notification(notification: NotificationCreate, user_id: str = Q
 
 @api_router.get("/notifications/{user_id}", response_model=List[Notification])
 async def get_user_notifications(user_id: str, current_user: str = Depends(get_current_user)):
-    notifications = await db.notifications.find({"user_id": user_id}).sort("created_at", -1).to_list(100)
+    notifications = await db.notifications.find({"user_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
     return [Notification(**notification) for notification in notifications]
 
 @api_router.put("/notifications/{notification_id}/read")
