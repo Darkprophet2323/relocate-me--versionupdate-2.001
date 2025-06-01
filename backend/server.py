@@ -712,7 +712,7 @@ async def create_job_application(application_data: JobApplicationCreate):
 
 @api_router.get("/job-applications/{user_id}")
 async def get_user_job_applications(user_id: str):
-    applications = await db.job_applications.find({"user_id": user_id}).to_list(1000)
+    applications = await db.job_applications.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
     return [JobApplication(**app) for app in applications]
 
 # Chrome Extensions Endpoints
