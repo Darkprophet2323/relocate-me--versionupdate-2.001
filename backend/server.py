@@ -443,15 +443,13 @@ async def verify_token(current_user: str = Depends(get_current_user)):
 @api_router.post("/profile", response_model=UserProfile)
 async def create_user_profile(profile: UserProfileCreate, current_user: str = Depends(get_current_user)):
     profile_dict = profile.dict()
-    # Use a predictable ID based on the current user instead of UUID
-    profile_dict["id"] = f"profile_{current_user}"
     profile_obj = UserProfile(**profile_dict)
     await db.user_profiles.insert_one(profile_obj.dict())
     return profile_obj
 
 @api_router.get("/profile/{user_id}", response_model=UserProfile)
 async def get_user_profile(user_id: str, current_user: str = Depends(get_current_user)):
-    profile = await db.user_profiles.find_one({"id": user_id}, {"_id": 0})
+    profile = await db.user_profiles.find_one({"id": user_id})
     if not profile:
         raise HTTPException(status_code=404, detail="User profile not found")
     return UserProfile(**profile)
@@ -467,7 +465,7 @@ async def create_notification(notification: NotificationCreate, user_id: str = Q
 
 @api_router.get("/notifications/{user_id}", response_model=List[Notification])
 async def get_user_notifications(user_id: str, current_user: str = Depends(get_current_user)):
-    notifications = await db.notifications.find({"user_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    notifications = await db.notifications.find({"user_id": user_id}).sort("created_at", -1).to_list(100)
     return [Notification(**notification) for notification in notifications]
 
 @api_router.put("/notifications/{notification_id}/read")
@@ -495,12 +493,12 @@ async def create_financial_record(record: FinancialRecordCreate, user_id: str = 
 
 @api_router.get("/financial-records/{user_id}", response_model=List[FinancialRecord])
 async def get_financial_records(user_id: str, current_user: str = Depends(get_current_user)):
-    records = await db.financial_records.find({"user_id": user_id}, {"_id": 0}).sort("date", -1).to_list(100)
+    records = await db.financial_records.find({"user_id": user_id}).sort("date", -1).to_list(100)
     return [FinancialRecord(**record) for record in records]
 
 @api_router.get("/financial-summary/{user_id}")
 async def get_financial_summary(user_id: str, current_user: str = Depends(get_current_user)):
-    records = await db.financial_records.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    records = await db.financial_records.find({"user_id": user_id}).to_list(100)
     
     summary = {
         "total_spent_usd": sum(r.get("amount_usd", 0) for r in records),
@@ -523,51 +521,23 @@ async def get_financial_summary(user_id: str, current_user: str = Depends(get_cu
 # Arizona Property Endpoints
 @api_router.post("/arizona-property", response_model=ArizonaProperty)
 async def create_arizona_property(property_data: PropertyCreate):
-    try:
-        logger.info(f"Creating arizona property with data: {property_data}")
-        property_dict = property_data.dict()
-        property_obj = ArizonaProperty(**property_dict)
-        
-        # Add market valuation
-        estimated_value = simulate_property_valuation(property_obj)
-        property_obj.estimated_value = estimated_value
-        
-        logger.info(f"Property object created: {property_obj}")
-        
-        # Insert into database
-        result = await db.arizona_properties.insert_one(property_obj.dict())
-        logger.info(f"Database insert result: {result.inserted_id}")
-        
-        return property_obj
-    except Exception as e:
-        logger.error(f"Error creating arizona property: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error creating property: {str(e)}")
+    property_dict = property_data.dict()
+    property_obj = ArizonaProperty(**property_dict)
+    
+    estimated_value = simulate_property_valuation(property_obj)
+    property_obj.estimated_value = estimated_value
+    
+    await db.arizona_properties.insert_one(property_obj.dict())
+    return property_obj
 
 @api_router.get("/arizona-property", response_model=List[ArizonaProperty])
 async def get_arizona_properties():
-    try:
-        properties = await db.arizona_properties.find({}, {"_id": 0}).to_list(1000)
-        logger.info(f"Retrieved {len(properties)} properties from database")
-        
-        # Convert and validate each property
-        result = []
-        for i, prop in enumerate(properties):
-            try:
-                property_obj = ArizonaProperty(**prop)
-                result.append(property_obj)
-            except Exception as e:
-                logger.error(f"Error converting property {i}: {e}")
-                logger.error(f"Property data: {prop}")
-                continue
-        
-        return result
-    except Exception as e:
-        logger.error(f"Error retrieving arizona properties: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    properties = await db.arizona_properties.find().to_list(1000)
+    return [ArizonaProperty(**prop) for prop in properties]
 
 @api_router.get("/arizona-property/{property_id}", response_model=ArizonaProperty)
 async def get_arizona_property(property_id: str):
-    property_doc = await db.arizona_properties.find_one({"id": property_id}, {"_id": 0})
+    property_doc = await db.arizona_properties.find_one({"id": property_id})
     if not property_doc:
         raise HTTPException(status_code=404, detail="Property not found")
     return ArizonaProperty(**property_doc)
@@ -589,48 +559,22 @@ async def get_market_analysis(property_id: str):
 # UK Visa Endpoints
 @api_router.post("/visa-application", response_model=UKVisaApplication)
 async def create_visa_application(visa_data: VisaApplicationCreate):
-    try:
-        logger.info(f"Creating visa application with data: {visa_data}")
-        visa_dict = visa_data.dict()
-        
-        timeline = get_default_visa_timeline(visa_data.visa_type)
-        visa_dict["timeline_milestones"] = timeline
-        
-        checklist = get_default_document_checklist(visa_data.visa_type)
-        visa_dict["documents_checklist"] = checklist
-        
-        visa_obj = UKVisaApplication(**visa_dict)
-        logger.info(f"Visa object created: {visa_obj}")
-        
-        result = await db.visa_applications.insert_one(visa_obj.dict())
-        logger.info(f"Database insert result: {result.inserted_id}")
-        
-        return visa_obj
-    except Exception as e:
-        logger.error(f"Error creating visa application: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error creating visa application: {str(e)}")
+    visa_dict = visa_data.dict()
+    
+    timeline = get_default_visa_timeline(visa_data.visa_type)
+    visa_dict["timeline_milestones"] = timeline
+    
+    checklist = get_default_document_checklist(visa_data.visa_type)
+    visa_dict["documents_checklist"] = checklist
+    
+    visa_obj = UKVisaApplication(**visa_dict)
+    await db.visa_applications.insert_one(visa_obj.dict())
+    return visa_obj
 
 @api_router.get("/visa-application", response_model=List[UKVisaApplication])
 async def get_visa_applications():
-    try:
-        applications = await db.visa_applications.find({}, {"_id": 0}).to_list(1000)
-        logger.info(f"Retrieved {len(applications)} visa applications from database")
-        
-        # Convert and validate each application
-        result = []
-        for i, app in enumerate(applications):
-            try:
-                visa_obj = UKVisaApplication(**app)
-                result.append(visa_obj)
-            except Exception as e:
-                logger.error(f"Error converting visa application {i}: {e}")
-                logger.error(f"Application data: {app}")
-                continue
-        
-        return result
-    except Exception as e:
-        logger.error(f"Error retrieving visa applications: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    applications = await db.visa_applications.find().to_list(1000)
+    return [UKVisaApplication(**app) for app in applications]
 
 @api_router.post("/visa-eligibility-check")
 async def check_visa_eligibility(visa_type: VisaType, user_responses: Dict[str, Any]):
@@ -768,7 +712,7 @@ async def create_job_application(application_data: JobApplicationCreate):
 
 @api_router.get("/job-applications/{user_id}")
 async def get_user_job_applications(user_id: str):
-    applications = await db.job_applications.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    applications = await db.job_applications.find({"user_id": user_id}).to_list(1000)
     return [JobApplication(**app) for app in applications]
 
 # Chrome Extensions Endpoints
@@ -809,7 +753,7 @@ async def create_timeline_milestone(milestone: TimelineMilestoneCreate, user_id:
 
 @api_router.get("/timeline/{user_id}", response_model=List[TimelineMilestone])
 async def get_user_timeline(user_id: str, current_user: str = Depends(get_current_user)):
-    milestones = await db.timeline_milestones.find({"user_id": user_id}, {"_id": 0}).sort("target_date", 1).to_list(100)
+    milestones = await db.timeline_milestones.find({"user_id": user_id}).sort("target_date", 1).to_list(100)
     return [TimelineMilestone(**milestone) for milestone in milestones]
 
 @api_router.put("/timeline-milestone/{milestone_id}")
@@ -827,7 +771,7 @@ async def update_milestone_completion(milestone_id: str, completed: bool, curren
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Milestone not found")
     
-    milestone = await db.timeline_milestones.find_one({"id": milestone_id}, {"_id": 0})
+    milestone = await db.timeline_milestones.find_one({"id": milestone_id})
     return TimelineMilestone(**milestone)
 
 @api_router.post("/initialize-timeline/{user_id}")
@@ -959,7 +903,7 @@ def generate_sample_uk_properties(search_params: PropertySearchRequest) -> List[
             "bedrooms": 3,
             "bathrooms": 2,
             "property_type": "terraced",
-            "images": ["https://images.pexels.com/photos/1661566/pexels-photo-1661566.jpeg"]
+            "images": ["https://images.unsplash.com/photo-1568605114967-8130f3a36994"]
         },
         {
             "id": str(uuid.uuid4()),
@@ -971,7 +915,7 @@ def generate_sample_uk_properties(search_params: PropertySearchRequest) -> List[
             "bedrooms": 2,
             "bathrooms": 1,
             "property_type": "detached",
-            "images": ["https://images.pexels.com/photos/242246/pexels-photo-242246.jpeg"]
+            "images": ["https://images.unsplash.com/photo-1570129477492-45c003edd2be"]
         }
     ]
     return sample_properties
@@ -1010,7 +954,7 @@ def get_curated_extensions() -> List[ChromeExtension]:
             rating=4.5,
             user_count="10,000+",
             features=["Advanced filters", "Price alerts", "Map integration"],
-            icon_url="https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg"
+            icon_url="https://images.unsplash.com/photo-1560518883-ce09059eeffa"
         ),
         ChromeExtension(
             name="LinkedIn Job Search Pro",
@@ -1020,7 +964,7 @@ def get_curated_extensions() -> List[ChromeExtension]:
             rating=4.7,
             user_count="50,000+",
             features=["Visa sponsorship filter", "Salary insights", "Application tracking"],
-            icon_url="https://images.pexels.com/photos/1571459/pexels-photo-1571459.jpeg"
+            icon_url="https://images.unsplash.com/photo-1586281380349-632531db7ed4"
         ),
         ChromeExtension(
             name="UK Visa Tracker",
@@ -1030,7 +974,7 @@ def get_curated_extensions() -> List[ChromeExtension]:
             rating=4.3,
             user_count="5,000+",
             features=["Application tracking", "Deadline reminders", "Document checklist"],
-            icon_url="https://images.pexels.com/photos/3639542/pexels-photo-3639542.jpeg"
+            icon_url="https://images.unsplash.com/photo-1521791136064-7986c2920216"
         ),
         ChromeExtension(
             name="Indeed UK Job Alerts",
@@ -1040,7 +984,7 @@ def get_curated_extensions() -> List[ChromeExtension]:
             rating=4.4,
             user_count="25,000+",
             features=["Real-time alerts", "Remote work filter", "Salary comparison"],
-            icon_url="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40"
+            icon_url="https://images.unsplash.com/photo-1611224923853-80b023f02d71"
         ),
         ChromeExtension(
             name="Zoopla Property Tools",
@@ -1050,7 +994,7 @@ def get_curated_extensions() -> List[ChromeExtension]:
             rating=4.2,
             user_count="8,000+",
             features=["Area insights", "Transport data", "School ratings"],
-            icon_url="https://images.unsplash.com/photo-1513530534585-c7b1394c6d51"
+            icon_url="https://images.unsplash.com/photo-1560472354-b33ff0c44a43"
         ),
         ChromeExtension(
             name="Relocation Checklist Manager",
@@ -1060,7 +1004,7 @@ def get_curated_extensions() -> List[ChromeExtension]:
             rating=4.6,
             user_count="15,000+",
             features=["Customizable checklists", "Progress tracking", "Deadline management"],
-            icon_url="https://images.unsplash.com/photo-1444653614773-995cb1ef9efa"
+            icon_url="https://images.unsplash.com/photo-1586953208448-b95a79798f07"
         )
     ]
 
