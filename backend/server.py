@@ -443,6 +443,8 @@ async def verify_token(current_user: str = Depends(get_current_user)):
 @api_router.post("/profile", response_model=UserProfile)
 async def create_user_profile(profile: UserProfileCreate, current_user: str = Depends(get_current_user)):
     profile_dict = profile.dict()
+    # Use a predictable ID based on the current user instead of UUID
+    profile_dict["id"] = f"profile_{current_user}"
     profile_obj = UserProfile(**profile_dict)
     await db.user_profiles.insert_one(profile_obj.dict())
     return profile_obj
