@@ -753,7 +753,7 @@ async def create_timeline_milestone(milestone: TimelineMilestoneCreate, user_id:
 
 @api_router.get("/timeline/{user_id}", response_model=List[TimelineMilestone])
 async def get_user_timeline(user_id: str, current_user: str = Depends(get_current_user)):
-    milestones = await db.timeline_milestones.find({"user_id": user_id}).sort("target_date", 1).to_list(100)
+    milestones = await db.timeline_milestones.find({"user_id": user_id}, {"_id": 0}).sort("target_date", 1).to_list(100)
     return [TimelineMilestone(**milestone) for milestone in milestones]
 
 @api_router.put("/timeline-milestone/{milestone_id}")
