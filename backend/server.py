@@ -394,9 +394,11 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 async def root():
     return {"message": "UK Relocation Platform API", "version": "2.0.0"}
 
-@api_router.get("/health")
-async def health_check():
-    return {"status": "healthy", "timestamp": datetime.utcnow()}
+@api_router.get("/debug-test")
+async def debug_test():
+    logger.info("🔧 DEBUG: Test endpoint called - logging is working!")
+    print("🔧 DEBUG: Test endpoint called - print is working!")
+    return {"status": "debug_test_working", "message": "Check logs for debug output"}
 
 # Authentication Endpoints
 @api_router.post("/login", response_model=Token)
