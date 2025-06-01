@@ -532,8 +532,11 @@ async def create_arizona_property(property_data: PropertyCreate):
 
 @api_router.get("/arizona-property")
 async def get_arizona_properties():
-    properties = await db.arizona_properties.find({}, {"_id": 0}).to_list(1000)
-    return properties
+    try:
+        properties = await db.arizona_properties.find({}, {"_id": 0}).to_list(1000)
+        return {"success": True, "count": len(properties), "properties": properties}
+    except Exception as e:
+        return {"success": False, "error": str(e), "type": type(e).__name__}
 
 @api_router.get("/arizona-property/{property_id}", response_model=ArizonaProperty)
 async def get_arizona_property(property_id: str):
