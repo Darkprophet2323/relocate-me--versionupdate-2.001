@@ -534,8 +534,25 @@ async def create_arizona_property(property_data: PropertyCreate):
 
 @api_router.get("/arizona-property", response_model=List[ArizonaProperty])
 async def get_arizona_properties():
-    properties = await db.arizona_properties.find({}, {"_id": 0}).to_list(1000)
-    return [ArizonaProperty(**prop) for prop in properties]
+    try:
+        properties = await db.arizona_properties.find({}, {"_id": 0}).to_list(1000)
+        logger.info(f"Retrieved {len(properties)} properties from database")
+        
+        # Convert and validate each property
+        result = []
+        for i, prop in enumerate(properties):
+            try:
+                property_obj = ArizonaProperty(**prop)
+                result.append(property_obj)
+            except Exception as e:
+                logger.error(f"Error converting property {i}: {e}")
+                logger.error(f"Property data: {prop}")
+                continue
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error retrieving arizona properties: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @api_router.get("/arizona-property/{property_id}", response_model=ArizonaProperty)
 async def get_arizona_property(property_id: str):
