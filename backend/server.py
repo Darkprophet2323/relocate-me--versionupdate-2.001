@@ -493,12 +493,12 @@ async def create_financial_record(record: FinancialRecordCreate, user_id: str = 
 
 @api_router.get("/financial-records/{user_id}", response_model=List[FinancialRecord])
 async def get_financial_records(user_id: str, current_user: str = Depends(get_current_user)):
-    records = await db.financial_records.find({"user_id": user_id}).sort("date", -1).to_list(100)
+    records = await db.financial_records.find({"user_id": user_id}, {"_id": 0}).sort("date", -1).to_list(100)
     return [FinancialRecord(**record) for record in records]
 
 @api_router.get("/financial-summary/{user_id}")
 async def get_financial_summary(user_id: str, current_user: str = Depends(get_current_user)):
-    records = await db.financial_records.find({"user_id": user_id}).to_list(100)
+    records = await db.financial_records.find({"user_id": user_id}, {"_id": 0}).to_list(100)
     
     summary = {
         "total_spent_usd": sum(r.get("amount_usd", 0) for r in records),
